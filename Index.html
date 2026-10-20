@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack Ōtautahi | Christchurch Sustainability & Recycling Hub</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#1b4332',
+                            primary: '#2d6a4f',
+                            accent: '#52b788',
+                            light: '#b7e4c7',
+                            soft: '#d8f3dc',
+                            bg: '#f8f9fa'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Leaflet.js Maps CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8f9fa;
+            color: #1e293b;
+        }
+        #map {
+            height: 480px;
+            width: 100%;
+            border-radius: 1rem;
+            z-index: 10;
+        }
+        .leaflet-popup-content-wrapper {
+            border-radius: 0.75rem;
+            padding: 0.25rem;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- HEADER / NAVIGATION -->
+    <header class="sticky top-0 z-50 bg-[#1b4332] text-white shadow-md border-b border-emerald-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-11 h-11 rounded-xl bg-[#52b788] text-[#1b4332] flex items-center justify-center font-extrabold text-2xl shadow-inner group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-leaf"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-bold tracking-tight text-white block leading-tight">EcoTrack <span class="text-[#52b788]">Ōtautahi</span></span>
+                    <span class="text-xs text-emerald-200 font-medium">Christchurch Sustainability Guide</span>
+                </div>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex items-center gap-1 lg:gap-2">
+                <a href="#directory" class="px-3 py-2 rounded-lg text-sm font-medium text-emerald-100 hover:text-white hover:bg-emerald-800/50 transition">
+                    <i class="fa-solid fa-location-dot mr-1.5 text-[#52b788]"></i> Drop-off Directory
+                </a>
+                <a href="#sorting-guide" class="px-3 py-2 rounded-lg text-sm font-medium text-emerald-100 hover:text-white hover:bg-emerald-800/50 transition">
+                    <i class="fa-solid fa-recycle mr-1.5 text-[#52b788]"></i> Waste Sorting Guide
+                </a>
+                <a href="#bin-schedule" class="px-3 py-2 rounded-lg text-sm font-medium text-emerald-100 hover:text-white hover:bg-emerald-800/50 transition">
+                    <i class="fa-solid fa-calendar-days mr-1.5 text-[#52b788]"></i> Bin Day
+                </a>
+                <a href="#calculator" class="px-3 py-2 rounded-lg text-sm font-medium text-emerald-100 hover:text-white hover:bg-emerald-800/50 transition">
+                    <i class="fa-solid fa-calculator mr-1.5 text-[#52b788]"></i> Footprint & Goals
+                </a>
+                <a href="#events" class="px-3 py-2 rounded-lg text-sm font-medium text-emerald-100 hover:text-white hover:bg-emerald-800/50 transition">
+                    <i class="fa-solid fa-users-line mr-1.5 text-[#52b788]"></i> Cleanups
+                </a>
+                <a href="#donate" class="px-3 py-2 rounded-lg text-sm font-medium text-emerald-100 hover:text-white hover:bg-emerald-800/50 transition">
+                    <i class="fa-solid fa-heart mr-1.5 text-[#52b788]"></i> Donate
+                </a>
+            </nav>
+
+            <!-- Mobile Menu Toggle Button -->
+            <button id="mobile-menu-btn" class="md:hidden p-2.5 rounded-lg bg-emerald-800 text-white hover:bg-emerald-700 transition" aria-label="Toggle Navigation Menu">
+                <i class="fa-solid fa-bars text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-[#1b4332] border-t border-emerald-800 px-4 pt-3 pb-5 space-y-2">
+            <a href="#directory" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-base font-medium text-emerald-100 hover:bg-emerald-800">
+                <i class="fa-solid fa-location-dot w-6 text-[#52b788]"></i> Drop-off Directory
+            </a>
+            <a href="#sorting-guide" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-base font-medium text-emerald-100 hover:bg-emerald-800">
+                <i class="fa-solid fa-recycle w-6 text-[#52b788]"></i> Waste Sorting Guide
+            </a>
+            <a href="#bin-schedule" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-base font-medium text-emerald-100 hover:bg-emerald-800">
+                <i class="fa-solid fa-calendar-days w-6 text-[#52b788]"></i> Bin Collection Lookup
+            </a>
+            <a href="#calculator" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-base font-medium text-emerald-100 hover:bg-emerald-800">
+                <i class="fa-solid fa-calculator w-6 text-[#52b788]"></i> Footprint & Savings Goals
+            </a>
+            <a href="#events" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-base font-medium text-emerald-100 hover:bg-emerald-800">
+                <i class="fa-solid fa-users-line w-6 text-[#52b788]"></i> Community Cleanups
+            </a>
+            <a href="#donate" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-base font-medium text-emerald-100 hover:bg-emerald-800">
+                <i class="fa-solid fa-heart w-6 text-[#52b788]"></i> Support & Donate
+            </a>
+            <a href="#kaitiakitanga" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-base font-medium text-emerald-100 hover:bg-emerald-800">
+                <i class="fa-solid fa-shield-halved w-6 text-[#52b788]"></i> Kaitiakitanga & Credits
+            </a>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="bg-gradient-to-b from-[#1b4332] via-[#2d6a4f] to-[#1b4332] text-white py-14 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div class="max-w-5xl mx-auto text-center relative z-10">
+            <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-[#52b788] border border-emerald-500/30 text-xs font-bold uppercase tracking-wider mb-4">
+                <i class="fa-solid fa-seedling"></i> Tech Fair 2026 Portfolio Project
+            </span>
+            <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4 text-white">
+                Protecting Our Environment Together in Ōtautahi
+            </h1>
+            <p class="text-base sm:text-xl text-emerald-100 max-w-3xl mx-auto mb-8 font-normal leading-relaxed">
+                Find local recycling drop-off points, search 60+ household items in our Christchurch bin guide, check collection schedules, and track your carbon reduction goals.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#sorting-guide" class="px-6 py-3.5 rounded-xl bg-[#52b788] text-[#1b4332] font-bold shadow-lg hover:bg-[#b7e4c7] transition flex items-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass"></i> What Bin Does It Go In?
+                </a>
+                <a href="#directory" class="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/20 transition flex items-center gap-2">
+                    <i class="fa-solid fa-map-location-dot"></i> Find Local Drop-offs
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 1: INTERACTIVE DIRECTORY & MAP -->
+    <section id="directory" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div class="mb-8">
+            <span class="text-xs font-extrabold uppercase tracking-widest text-[#2d6a4f]">Interactive Map</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Christchurch Eco Drop-off Directory</h2>
+            <p class="text-slate-600 mt-1">Filter by waste type or search by facility name to update the interactive map markers.</p>
+        </div>
+
+        <!-- Filter Controls Bar -->
+        <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+            <!-- Search Input -->
+            <div class="relative w-full md:w-1/2">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" id="search-input" placeholder="Search facilities (e.g., Parklands, Metro, Soft Plastics)..." 
+                       class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#2d6a4f] focus:border-transparent text-sm">
+            </div>
+
+            <!-- Category Filter Dropdown -->
+            <div class="w-full md:w-1/2 flex items-center gap-3">
+                <label for="category-select" class="text-sm font-semibold text-slate-700 whitespace-nowrap hidden sm:block">Filter Category:</label>
+                <select id="category-select" class="w-full py-3 px-4 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#2d6a4f] text-sm font-medium text-slate-700">
+                    <option value="all">All Categories</option>
+                    <option value="ewaste">E-Waste & Electronics</option>
+                    <option value="softplastic">Soft Plastics</option>
+                    <option value="organics">Green Waste & Organic</option>
+                    <option value="hazardous">Hazardous & Batteries</option>
+                    <option value="general">General Recycling (EcoDrop)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Map & Location List Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <!-- Interactive Map Container -->
+            <div class="lg:col-span-7 bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
+                <div id="map"></div>
+            </div>
+
+            <!-- Dynamic Location List -->
+            <div class="lg:col-span-5 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 h-[504px] flex flex-col">
+                <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-3">
+                    <h3 class="font-bold text-slate-800 text-base">Matching Facilities</h3>
+                    <span id="results-count" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-[#2d6a4f]">6 Locations</span>
+                </div>
+                
+                <div id="locations-list" class="space-y-3 overflow-y-auto custom-scrollbar flex-1 pr-1">
+                    <!-- Dynamic Javascript items will render here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2: WASTE SORTING GUIDE & EXPANDED ITEM LOOKUP -->
+    <section id="sorting-guide" class="py-16 bg-slate-100 border-y border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-10">
+                <span class="text-xs font-extrabold uppercase tracking-widest text-[#2d6a4f]">Christchurch Bin System</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Which Bin Does It Belong In?</h2>
+                <p class="text-slate-600 mt-2">Search over 60 common household items below or review Christchurch City Council's 4-bin rules.</p>
+            </div>
+
+            <!-- EXPANDED INSTANT WASTE ITEM LOOKUP SEARCH BAR -->
+            <div class="bg-white p-6 rounded-3xl shadow-md border border-slate-200 mb-12 max-w-4xl mx-auto">
+                <div class="flex flex-col sm:flex-row gap-3 items-center mb-4">
+                    <div class="relative w-full">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+                        <input type="text" id="item-lookup-input" placeholder="Type any item (e.g. pizza box, coffee cup, battery, foil, milk bottle, nappies, bubble wrap)..." 
+                               class="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#2d6a4f] text-sm font-medium text-slate-800">
+                    </div>
+                    <button id="clear-lookup-btn" class="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold text-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-xmark"></i> Clear
+                    </button>
+                </div>
+
+                <!-- Category quick-filter chips -->
+                <div class="flex flex-wrap gap-2 mb-4 text-xs font-semibold">
+                    <span class="text-slate-500 py-1">Quick Filters:</span>
+                    <button class="lookup-chip px-3 py-1 rounded-full bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-[#1b4332] transition" data-filter="all">All Items</button>
+                    <button class="lookup-chip px-3 py-1 rounded-full bg-yellow-50 hover:bg-yellow-100 text-yellow-800 transition" data-filter="Yellow Bin">Yellow Bin</button>
+                    <button class="lookup-chip px-3 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 transition" data-filter="Green Bin">Green Bin</button>
+                    <button class="lookup-chip px-3 py-1 rounded-full bg-red-50 hover:bg-red-100 text-red-800 transition" data-filter="Red Bin">Red Bin</button>
+                    <button class="lookup-chip px-3 py-1 rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-800 transition" data-filter="Special Drop-off">Special Drop-off</button>
+                </div>
+
+                <!-- Instant Search Results Output Area -->
+                <div id="item-lookup-results" class="space-y-3 max-h-[380px] overflow-y-auto custom-scrollbar pr-1">
+                    <!-- Dynamic Waste Search items will render here -->
+                </div>
+            </div>
+
+            <!-- 4 Bin Type Grid Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Yellow Bin -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border-t-8 border-yellow-400 border-x border-b border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-yellow-100 text-yellow-700 flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-recycle text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-900">Yellow Bin</h3>
+                                <p class="text-xs text-slate-500 font-medium">Clean Recycling</p>
+                            </div>
+                        </div>
+                        <ul class="text-sm text-slate-600 space-y-2 mb-6">
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-xs"></i> Rigid plastics labeled 1, 2, & 5</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-xs"></i> Clean paper, cardboard, & cartons</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-xs"></i> Aluminum & tin cans (rinsed)</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-xs"></i> Glass bottles & jars</li>
+                        </ul>
+                    </div>
+                    <div class="p-3 bg-yellow-50 rounded-xl text-xs text-yellow-800 font-medium border border-yellow-200">
+                        <i class="fa-solid fa-circle-exclamation mr-1"></i> Rinse all items thoroughly!
+                    </div>
+                </div>
+
+                <!-- Green Bin -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border-t-8 border-emerald-500 border-x border-b border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-apple-whole text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-900">Green Bin</h3>
+                                <p class="text-xs text-slate-500 font-medium">Organic Composting</p>
+                            </div>
+                        </div>
+                        <ul class="text-sm text-slate-600 space-y-2 mb-6">
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-xs"></i> Food scraps & leftovers</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-xs"></i> Lawn clippings & garden prunings</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-xs"></i> Meat, bones, & dairy products</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-xs"></i> Soiled paper towels & napkins</li>
+                        </ul>
+                    </div>
+                    <div class="p-3 bg-emerald-50 rounded-xl text-xs text-emerald-800 font-medium border border-emerald-200">
+                        <i class="fa-solid fa-circle-check mr-1"></i> No plastic bags or treated wood.
+                    </div>
+                </div>
+
+                <!-- Red Bin -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border-t-8 border-red-500 border-x border-b border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-red-100 text-red-700 flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-trash-can text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-900">Red Bin</h3>
+                                <p class="text-xs text-slate-500 font-medium">Landfill Waste</p>
+                            </div>
+                        </div>
+                        <ul class="text-sm text-slate-600 space-y-2 mb-6">
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-xs"></i> Non-recyclable plastics (3, 4, 6, 7)</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-xs"></i> Disposable coffee cups & lids</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-xs"></i> Nappies & sanitary items</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-xs"></i> Broken ceramics & pyrex</li>
+                        </ul>
+                    </div>
+                    <div class="p-3 bg-red-50 rounded-xl text-xs text-red-800 font-medium border border-red-200">
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Last resort for unrecyclable waste.
+                    </div>
+                </div>
+
+                <!-- Special Drop-off -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border-t-8 border-indigo-500 border-x border-b border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-box-open text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-900">Special Drop-off</h3>
+                                <p class="text-xs text-slate-500 font-medium">EcoDrop / Retail Hubs</p>
+                            </div>
+                        </div>
+                        <ul class="text-sm text-slate-600 space-y-2 mb-6">
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-xs"></i> Soft plastic packaging</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-xs"></i> Batteries & household electronics</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-xs"></i> Paint, chemicals, & oils</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-xs"></i> Lightbulbs & fluorescent tubes</li>
+                        </ul>
+                    </div>
+                    <div class="p-3 bg-indigo-50 rounded-xl text-xs text-indigo-800 font-medium border border-indigo-200">
+                        <i class="fa-solid fa-map-pin mr-1"></i> Take to nearest EcoDrop center.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: BIN COLLECTION SCHEDULE LOOKUP -->
+    <section id="bin-schedule" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div class="bg-white rounded-3xl p-6 sm:p-10 shadow-sm border border-slate-200">
+            <div class="mb-8 text-center max-w-2xl mx-auto">
+                <span class="text-xs font-extrabold uppercase tracking-widest text-[#2d6a4f]">Council Collection Helper</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Bin Collection Day Lookup</h2>
+                <p class="text-slate-600 mt-1">Select your Christchurch suburb to view this week's scheduled bin collection.</p>
+            </div>
+
+            <div class="max-w-xl mx-auto bg-slate-50 p-6 rounded-2xl border border-slate-200 text-center">
+                <label for="suburb-select" class="block text-sm font-bold text-slate-800 mb-2">Select Your Suburb / Area:</label>
+                <select id="suburb-select" class="w-full py-3 px-4 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2d6a4f] text-sm font-semibold text-slate-800 mb-6">
+                    <option value="Riccarton">Riccarton / Ilam</option>
+                    <option value="Papanui">Papanui / Merivale</option>
+                    <option value="Woolston">Woolston / Ferrymead</option>
+                    <option value="Cashmere">Cashmere / Hoon Hay</option>
+                    <option value="Halswell">Halswell / Aidanfield</option>
+                    <option value="Sumner">Sumner / Redcliffs</option>
+                    <option value="Shirley">Shirley / Richmond</option>
+                    <option value="New Brighton">New Brighton / Parklands</option>
+                </select>
+
+                <div id="schedule-result-card" class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm text-left">
+                    <!-- Dynamic collection schedule will render here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4: CARBON FOOTPRINT CALCULATOR & GOAL TRACKER -->
+    <section id="calculator" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div class="bg-[#1b4332] text-white rounded-3xl p-6 sm:p-10 shadow-xl overflow-hidden relative">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                
+                <!-- Input Controls Column -->
+                <div class="lg:col-span-7 space-y-6 flex flex-col justify-between">
+                    <div>
+                        <span class="text-xs font-extrabold uppercase tracking-widest text-[#52b788]">Interactive Tool</span>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Weekly Household Carbon Footprint</h2>
+                        <p class="text-emerald-100 text-sm mt-1">Adjust the sliders to calculate your footprint and set annual reduction targets.</p>
+                    </div>
+
+                    <!-- Input 1: Transport -->
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label for="transport-slider" class="text-sm font-semibold flex items-center gap-2">
+                                <i class="fa-solid fa-car text-[#52b788]"></i> Weekly Driving Distance (KM):
+                            </label>
+                            <span id="transport-val" class="font-bold text-base text-[#52b788]">50 km</span>
+                        </div>
+                        <input type="range" id="transport-slider" min="0" max="300" step="10" value="50" 
+                               class="w-full h-2 bg-emerald-900 rounded-lg appearance-none cursor-pointer accent-[#52b788]">
+                    </div>
+
+                    <!-- Input 2: Red Bins -->
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label for="bin-slider" class="text-sm font-semibold flex items-center gap-2">
+                                <i class="fa-solid fa-trash text-[#52b788]"></i> Red Landfill Bins Filled per Week:
+                            </label>
+                            <span id="bin-val" class="font-bold text-base text-[#52b788]">1 Full Bin</span>
+                        </div>
+                        <input type="range" id="bin-slider" min="0.25" max="3" step="0.25" value="1" 
+                               class="w-full h-2 bg-emerald-900 rounded-lg appearance-none cursor-pointer accent-[#52b788]">
+                    </div>
+
+                    <!-- Input 3: Meat Consumption -->
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label for="meat-slider" class="text-sm font-semibold flex items-center gap-2">
+                                <i class="fa-solid fa-drumstick-bite text-[#52b788]"></i> Meat Meals per Week:
+                            </label>
+                            <span id="meat-val" class="font-bold text-base text-[#52b788]">7 meals</span>
+                        </div>
+                        <input type="range" id="meat-slider" min="0" max="21" step="1" value="7" 
+                               class="w-full h-2 bg-emerald-900 rounded-lg appearance-none cursor-pointer accent-[#52b788]">
+                    </div>
+
+                    <!-- Savings Goal Selector -->
+                    <div class="bg-emerald-900/40 p-4 rounded-xl border border-emerald-500/30">
+                        <label for="goal-select" class="block text-xs font-extrabold uppercase tracking-wider text-[#52b788] mb-1">Set Annual Savings Goal Target:</label>
+                        <select id="goal-select" class="w-full bg-[#1b4332] text-white border border-emerald-500/40 py-2 px-3 rounded-lg text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-[#52b788]">
+                            <option value="0.15">15% Carbon Reduction Goal</option>
+                            <option value="0.25" selected>25% Carbon Reduction Goal</option>
+                            <option value="0.40">40% Carbon Reduction Goal</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Live Results Column -->
+                <div class="lg:col-span-5 bg-white text-slate-900 p-6 sm:p-8 rounded-2xl shadow-lg border border-emerald-100 text-center flex flex-col justify-between h-full">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Estimated Impact</span>
+                        <div class="my-3">
+                            <span id="co2-total" class="text-5xl font-black text-[#1b4332]">28.5</span>
+                            <span class="text-lg font-bold text-slate-600 block mt-1">kg CO₂e / week</span>
+                        </div>
+                        <div id="impact-badge" class="inline-block px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 mb-4">
+                            Moderate Impact
+                        </div>
+                    </div>
+
+                    <!-- Goal Summary Box -->
+                    <div id="goal-summary-box" class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 text-left text-xs text-[#1b4332] mb-4 space-y-1 font-semibold">
+                        <!-- Rendered in JS -->
+                    </div>
+
+                    <div id="calc-tips" class="text-left bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-2">
+                        <!-- Dynamic tips render here -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 5: COMMUNITY CLEANUP EVENT FEED -->
+    <section id="events" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div class="mb-8 text-center max-w-2xl mx-auto">
+            <span class="text-xs font-extrabold uppercase tracking-widest text-[#2d6a4f]">Get Involved</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Upcoming Ōtautahi Eco Events</h2>
+            <p class="text-slate-600 mt-1">Join volunteer cleanups, planting days, and repair workshops across Canterbury.</p>
+        </div>
+
+        <div id="events-feed-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Rendered dynamically in JS -->
+        </div>
+    </section>
+
+    <!-- SECTION 6: SUPPORT & DONATIONS (NGO DIRECTORY) -->
+    <section id="donate" class="py-16 bg-emerald-50/50 border-t border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <span class="text-xs font-extrabold uppercase tracking-widest text-[#2d6a4f]">Community Impact</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Support Local Conservation Groups</h2>
+                <p class="text-slate-600 mt-2">Help fund beach cleanups, native tree planting, and waste reduction programs across Aotearoa New Zealand.</p>
+            </div>
+
+            <!-- NGO Directory Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- NGO 1 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-[#2d6a4f] flex items-center justify-center font-extrabold text-xl mb-4">
+                            <i class="fa-solid fa-water"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-900 mb-1">Sustainable Coastlines</h3>
+                        <p class="text-xs text-slate-500 mb-3 font-medium">Litter Removal & Ocean Health</p>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-6">
+                            Fights marine waste by organizing volunteer beach cleanups and restoring waterways across NZ.
+                        </p>
+                    </div>
+                    <a href="https://sustainablecoastlines.org/donate/" target="_blank" rel="noopener noreferrer" 
+                       class="w-full py-2.5 px-4 rounded-xl bg-[#2d6a4f] hover:bg-[#1b4332] text-white text-xs font-bold text-center transition flex items-center justify-center gap-2">
+                        Donate Directly <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+
+                <!-- NGO 2 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-[#2d6a4f] flex items-center justify-center font-extrabold text-xl mb-4">
+                            <i class="fa-solid fa-tree"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-900 mb-1">Forest & Bird</h3>
+                        <p class="text-xs text-slate-500 mb-3 font-medium">Native Bush & Wildlife Conservation</p>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-6">
+                            Protecting NZ's native plants, wild places, and unique species through habitat conservation.
+                        </p>
+                    </div>
+                    <a href="https://www.forestandbird.org.nz/support-us/donate" target="_blank" rel="noopener noreferrer" 
+                       class="w-full py-2.5 px-4 rounded-xl bg-[#2d6a4f] hover:bg-[#1b4332] text-white text-xs font-bold text-center transition flex items-center justify-center gap-2">
+                        Donate Directly <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+
+                <!-- NGO 3 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-[#2d6a4f] flex items-center justify-center font-extrabold text-xl mb-4">
+                            <i class="fa-solid fa-ship"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-900 mb-1">Sea Cleaners</h3>
+                        <p class="text-xs text-slate-500 mb-3 font-medium">Harbour & Coastal Trash Removal</p>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-6">
+                            Removes tonnes of plastic pollution from waterways and harbors before it harms marine life.
+                        </p>
+                    </div>
+                    <a href="https://seacleaners.com/donate/" target="_blank" rel="noopener noreferrer" 
+                       class="w-full py-2.5 px-4 rounded-xl bg-[#2d6a4f] hover:bg-[#1b4332] text-white text-xs font-bold text-center transition flex items-center justify-center gap-2">
+                        Donate Directly <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+
+                <!-- NGO 4 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-[#2d6a4f] flex items-center justify-center font-extrabold text-xl mb-4">
+                            <i class="fa-solid fa-hands-holding-circle"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-900 mb-1">Conservation Volunteers NZ</h3>
+                        <p class="text-xs text-slate-500 mb-3 font-medium">Community Environmental Restoration</p>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-6">
+                            Connecting local volunteers to community planting days, pest control, and stream restoration.
+                        </p>
+                    </div>
+                    <a href="https://conservationvolunteers.co.nz/donate/" target="_blank" rel="noopener noreferrer" 
+                       class="w-full py-2.5 px-4 rounded-xl bg-[#2d6a4f] hover:bg-[#1b4332] text-white text-xs font-bold text-center transition flex items-center justify-center gap-2">
+                        Donate Directly <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 7: KAITIAKITANGA & TECHNICAL ALIGNMENT -->
+    <section id="kaitiakitanga" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div class="bg-white rounded-3xl p-6 sm:p-10 shadow-sm border border-slate-200">
+            <div class="mb-8">
+                <span class="text-xs font-extrabold uppercase tracking-widest text-[#2d6a4f]">Project Justification</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Kaitiakitanga & Technical Alignment</h2>
+                <p class="text-slate-600 mt-1">How this digital outcome aligns with assessment criteria, usability standards, and cultural guardianship.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Functionality -->
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-[#2d6a4f] flex items-center justify-center font-bold mb-4">
+                        <i class="fa-solid fa-sliders text-lg"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-900 mb-2">1. Functionality</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Features interactive location search, Leaflet.js mapping, an expanded 60+ waste item lookup database, Christchurch suburb bin schedules, footprint savings tracking, and RSVP event registration.
+                    </p>
+                </div>
+
+                <!-- Aesthetics -->
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-[#2d6a4f] flex items-center justify-center font-bold mb-4">
+                        <i class="fa-solid fa-palette text-lg"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-900 mb-2">2. Aesthetics</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Designed with an earthy NZ-inspired palette (#1b4332, #52b788), high-contrast Plus Jakarta Sans typography, rounded card layouts, and responsive spacing across all mobile and desktop viewports.
+                    </p>
+                </div>
+
+                <!-- Intellectual Property -->
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-[#2d6a4f] flex items-center justify-center font-bold mb-4">
+                        <i class="fa-solid fa-copyright text-lg"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-900 mb-2">3. IP & Data Credits</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Data structured according to <b>Christchurch City Council (CCC)</b> waste guidelines, <b>OpenStreetMap</b> base tiles, registered non-profit organization links, and FontAwesome icons.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="mt-auto bg-[#1b4332] text-white border-t border-emerald-900 py-8 px-4 text-center">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-emerald-200">
+            <p>© 2026 EcoTrack Ōtautahi | Tech Fair Project by William Nichols</p>
+            <p>Data Sources: Christchurch City Council Recycling Guidelines & OpenStreetMap</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <script>
+        // --- 1. DROP-OFF LOCATIONS DATA ---
+        const ecoLocations = [
+            {
+                id: 1,
+                name: "EcoDrop Metro",
+                category: "general",
+                categoryLabel: "General & Hazardous EcoDrop",
+                address: "40 Parkhouse Road, Sockburn",
+                lat: -43.5482,
+                lng: 172.5821,
+                phone: "(03) 941 8999",
+                hours: "7:30am - 4:30pm daily",
+                accepts: "E-Waste, Green Waste, Chemicals, Paints, Batteries, Scrap Metal"
+            },
+            {
+                id: 2,
+                name: "EcoDrop Styx",
+                category: "organics",
+                categoryLabel: "EcoDrop & Green Waste Hub",
+                address: "160 Heyders Road, Spencerville",
+                lat: -43.4358,
+                lng: 172.6821,
+                phone: "(03) 941 8999",
+                hours: "8:00am - 4:00pm daily",
+                accepts: "Green Waste, Timber, Hardfill, General Recycling"
+            },
+            {
+                id: 3,
+                name: "EcoDrop Parklands",
+                category: "ewaste",
+                categoryLabel: "EcoDrop & E-Waste Center",
+                address: "Metro Place, Woolston",
+                lat: -43.5512,
+                lng: 172.6811,
+                phone: "(03) 941 8999",
+                hours: "7:30am - 4:30pm daily",
+                accepts: "Electronics, TV Screens, Computers, Small Appliances"
+            },
+            {
+                id: 4,
+                name: "Soft Plastics Hub - Countdown Riccarton",
+                category: "softplastic",
+                categoryLabel: "Soft Plastics Drop-off",
+                address: "Riccarton Mall, 129 Riccarton Rd",
+                lat: -43.5320,
+                lng: 172.6050,
+                phone: "In-store Bin",
+                hours: "Store Hours (8am - 10pm)",
+                accepts: "Bread bags, bubble wrap, chip packets, frozen food bags"
+            },
+            {
+                id: 5,
+                name: "Soft Plastics Hub - Pak'nSave Moorhouse",
+                category: "softplastic",
+                categoryLabel: "Soft Plastics Drop-off",
+                address: "297 Moorhouse Ave, Sydenham",
+                lat: -43.5385,
+                lng: 172.6335,
+                phone: "In-store Bin",
+                hours: "Store Hours (7am - 11pm)",
+                accepts: "Clean plastic bags, courier bags, shopping wrappers"
+            },
+            {
+                id: 6,
+                name: "Hazardous & Battery Recycling - Mitre 10 Papanui",
+                category: "hazardous",
+                categoryLabel: "Battery & Bulb Recycling",
+                address: "54 Harewood Rd, Papanui",
+                lat: -43.4981,
+                lng: 172.6072,
+                phone: "(03) 352 2011",
+                hours: "7:00am - 6:00pm",
+                accepts: "Household AA/AAA batteries, power tool batteries, LED/CFL bulbs"
+            }
+        ];
+
+        // --- 2. EXPANDED 60+ WASTE ITEMS DATABASE ---
+        const wasteDatabase = [
+            { name: "Pizza Box (Clean)", bin: "Yellow Bin", note: "Rinse/wipe away food scraps.", category: "Paper & Cardboard", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Pizza Box (Greasy / Soiled)", bin: "Green Bin", note: "Heavy oil/cheese goes into organics.", category: "Organic", badge: "bg-emerald-100 text-emerald-800" },
+            { name: "Takeaway Coffee Cups", bin: "Red Bin", note: "Plastic lining prevents recycling.", category: "General", badge: "bg-red-100 text-red-800" },
+            { name: "Takeaway Coffee Lid (Plastic #5)", bin: "Yellow Bin", note: "Rinse clean before binning.", category: "Plastics", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Soft Plastics & Plastic Bags", bin: "Special Drop-off", note: "Drop at supermarket soft plastic bins.", category: "Special", badge: "bg-indigo-100 text-indigo-800" },
+            { name: "Bubble Wrap", bin: "Special Drop-off", note: "Return to soft plastic drop-off hubs.", category: "Special", badge: "bg-indigo-100 text-indigo-800" },
+            { name: "Batteries (AA, AAA, Lithium)", bin: "Special Drop-off", note: "Take to Mitre 10, Bunnings, or EcoDrop.", category: "Hazardous", badge: "bg-indigo-100 text-indigo-800" },
+            { name: "Plastic Milk Bottles (#1 or #2)", bin: "Yellow Bin", note: "Rinse clean and remove lids.", category: "Plastics", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Aluminum Drinks Cans", bin: "Yellow Bin", note: "Rinse clean.", category: "Metals", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Food Scraps & Fruit Peels", bin: "Green Bin", note: "No plastic bags in green bin.", category: "Organic", badge: "bg-emerald-100 text-emerald-800" },
+            { name: "Meat & Fish Bones", bin: "Green Bin", note: "Accepted in Christchurch green bins.", category: "Organic", badge: "bg-emerald-100 text-emerald-800" },
+            { name: "Lawn Clippings & Prunings", bin: "Green Bin", note: "No treated timber or soil.", category: "Organic", badge: "bg-emerald-100 text-emerald-800" },
+            { name: "Polystyrene & Styrofoam", bin: "Red Bin", note: "Break down into red landfill bin.", category: "Landfill", badge: "bg-red-100 text-red-800" },
+            { name: "Nappies & Sanitary Products", bin: "Red Bin", note: "Wrap securely.", category: "Landfill", badge: "bg-red-100 text-red-800" },
+            { name: "Glass Jars & Wine Bottles", bin: "Yellow Bin", note: "Rinse clean, lids go into Red Bin.", category: "Glass", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Broken Glassware & Pyrex", bin: "Red Bin", note: "Melts at different temperatures than bottles.", category: "Landfill", badge: "bg-red-100 text-red-800" },
+            { name: "Lightbulbs (Fluorescent & LED)", bin: "Special Drop-off", note: "EcoDrop or hardware store drop-off.", category: "Hazardous", badge: "bg-indigo-100 text-indigo-800" },
+            { name: "Aerosol Cans (Empty)", bin: "Yellow Bin", note: "Must be completely empty.", category: "Metals", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Aluminum Foil (Cleaned)", bin: "Yellow Bin", note: "Scrunched into a tennis ball size.", category: "Metals", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Treated Timber & Offcuts", bin: "Special Drop-off", note: "EcoDrop transfer station.", category: "Building", badge: "bg-indigo-100 text-indigo-800" },
+            { name: "Pet Waste & Kitty Litter", bin: "Red Bin", note: "Never put in green compost bin.", category: "Landfill", badge: "bg-red-100 text-red-800" },
+            { name: "Old Clothes & Textiles", bin: "Special Drop-off", note: "Donate to clothing bins or op-shops.", category: "Textiles", badge: "bg-indigo-100 text-indigo-800" },
+            { name: "Plastic Cutlery & Straws", bin: "Red Bin", note: "Too small or flexible for sorting plant.", category: "Plastics", badge: "bg-red-100 text-red-800" },
+            { name: "Egg Cartons (Cardboard)", bin: "Yellow Bin", note: "Can also compost in Green Bin.", category: "Paper", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Cosmetics Containers (Clean Plastic)", bin: "Yellow Bin", note: "Plastics 1, 2, 5 only.", category: "Plastics", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Tetra Pak Juice Boxes", bin: "Red Bin", note: "Composite foil/cardboard material.", category: "Landfill", badge: "bg-red-100 text-red-800" },
+            { name: "Paint Tins (Empty)", bin: "Special Drop-off", note: "EcoDrop hazardous drop-off.", category: "Hazardous", badge: "bg-indigo-100 text-indigo-800" },
+            { name: "Engine & Cooking Oil", bin: "Special Drop-off", note: "Drop at EcoDrop Metro/Parklands.", category: "Hazardous", badge: "bg-indigo-100 text-indigo-800" },
+            { name: "Electronics & Chargers", bin: "Special Drop-off", note: "EcoDrop E-Waste facility.", category: "E-Waste", badge: "bg-indigo-100 text-indigo-800" },
+            { name: "Shampoo Bottles (#1, #2)", bin: "Yellow Bin", note: "Rinse clean, lids off.", category: "Plastics", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Cardboard Boxes (Flattened)", bin: "Yellow Bin", note: "Flatten all boxes before binning.", category: "Cardboard", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Soiled Paper Towels", bin: "Green Bin", note: "Greasy/wet towels compost well.", category: "Paper", badge: "bg-emerald-100 text-emerald-800" },
+            { name: "Coffee Grounds & Tea Bags", bin: "Green Bin", note: "Ensure tea bag has no plastic mesh.", category: "Organic", badge: "bg-emerald-100 text-emerald-800" },
+            { name: "Tin Cans (Baked Beans/Soup)", bin: "Yellow Bin", note: "Rinse clean.", category: "Metals", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Plastic Meat Trays (#1, #2, #5)", bin: "Yellow Bin", note: "Rinse thoroughly.", category: "Plastics", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Plastic Meat Trays (Clear #6 or Styrofoam)", bin: "Red Bin", note: "Plastics #6 and expanded foam go to landfill.", category: "Landfill", badge: "bg-red-100 text-red-800" },
+            { name: "Ice Cream Containers (#5)", bin: "Yellow Bin", note: "Rinse clean.", category: "Plastics", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Bread Bags & Clip Tags", bin: "Special Drop-off", note: "Bags to soft plastics, clips to Red Bin.", category: "Special", badge: "bg-indigo-100 text-indigo-800" },
+            { name: "Pottles & Yoghurt Containers (#1, #2, #5)", bin: "Yellow Bin", note: "Rinse clean.", category: "Plastics", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Chip Packets & Foil Wrappers", bin: "Special Drop-off", note: "Soft plastics drop-off.", category: "Special", badge: "bg-indigo-100 text-indigo-800" },
+            { name: "Newspapers & Magazines", bin: "Yellow Bin", note: "Clean and dry.", category: "Paper", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Receipts (Thermal Paper)", bin: "Red Bin", note: "Contains BPA/BPS coating.", category: "Landfill", badge: "bg-red-100 text-red-800" },
+            { name: "Plastic Toys (Broken)", bin: "Red Bin", note: "Mixed hard plastics.", category: "Landfill", badge: "bg-red-100 text-red-800" },
+            { name: "Garden Hose & Piping", bin: "Red Bin", note: "Tangles sorting machinery.", category: "Landfill", badge: "bg-red-100 text-red-800" },
+            { name: "Cling Wrap & Plastic Film", bin: "Red Bin", note: "Unsuitable for soft plastic bins.", category: "Landfill", badge: "bg-red-100 text-red-800" },
+            { name: "Courier Bags & Mailers", bin: "Special Drop-off", note: "Soft plastics drop-off.", category: "Special", badge: "bg-indigo-100 text-indigo-800" },
+            { name: "Cd / DVD Discs & Cases", bin: "Red Bin", note: "Landfill waste.", category: "Landfill", badge: "bg-red-100 text-red-800" },
+            { name: "Cell Phones & Tablets", bin: "Special Drop-off", note: "RECYCLE A CELL program or EcoDrop.", category: "E-Waste", badge: "bg-indigo-100 text-indigo-800" },
+            { name: "Vacuum Cleaner Dust", bin: "Red Bin", note: "Bag securely into red bin.", category: "Landfill", badge: "bg-red-100 text-red-800" },
+            { name: "Wine Corks (Natural)", bin: "Green Bin", note: "Compostable organic matter.", category: "Organic", badge: "bg-emerald-100 text-emerald-800" },
+            { name: "Wine Corks (Synthetic Plastic)", bin: "Red Bin", note: "Synthetic plastic corks go to landfill.", category: "Landfill", badge: "bg-red-100 text-red-800" },
+            { name: "Greeting Cards (No Glitter)", bin: "Yellow Bin", note: "Glitter cards must go to Red Bin.", category: "Paper", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Greeting Cards (With Glitter)", bin: "Red Bin", note: "Microplastics contaminate paper recycling.", category: "Landfill", badge: "bg-red-100 text-red-800" },
+            { name: "Pill Blister Packs", bin: "Red Bin", note: "Foil and plastic composite.", category: "Landfill", badge: "bg-red-100 text-red-800" },
+            { name: "Toothbrush & Toothpaste Tubes", bin: "Red Bin", note: "Composite plastics.", category: "Landfill", badge: "bg-red-100 text-red-800" },
+            { name: "Glass Drink Bottles", bin: "Yellow Bin", note: "Rinse clean, lid to red bin.", category: "Glass", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Steel Food Cans", bin: "Yellow Bin", note: "Rinse clean.", category: "Metals", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Envelopes (With Window)", bin: "Yellow Bin", note: "Plastic window removed or kept intact in CCC.", category: "Paper", badge: "bg-yellow-100 text-yellow-800" },
+            { name: "Wood Ash & Charcoal (Cooled)", bin: "Green Bin", note: "Ensure 100% cold before binning.", category: "Organic", badge: "bg-emerald-100 text-emerald-800" },
+            { name: "Plastic Milk Bottle Lids", bin: "Red Bin", note: "Small caps fall through sorting screens.", category: "Landfill", badge: "bg-red-100 text-red-800" },
+            { name: "Ceramic Plates & Mugs", bin: "Red Bin", note: "Non-recyclable ceramic.", category: "Landfill", badge: "bg-red-100 text-red-800" }
+        ];
+
+        // --- 3. SUBURB COLLECTION SCHEDULES ---
+        const suburbSchedules = {
+            "Riccarton": { day: "Tuesday", week: "Yellow + Green Bin Week", nextDate: "Next Tuesday, Oct 27" },
+            "Papanui": { day: "Wednesday", week: "Red + Green Bin Week", nextDate: "Next Wednesday, Oct 28" },
+            "Woolston": { day: "Thursday", week: "Yellow + Green Bin Week", nextDate: "Next Thursday, Oct 29" },
+            "Cashmere": { day: "Friday", week: "Red + Green Bin Week", nextDate: "Next Friday, Oct 30" },
+            "Halswell": { day: "Monday", week: "Yellow + Green Bin Week", nextDate: "Next Monday, Nov 2" },
+            "Sumner": { day: "Wednesday", week: "Yellow + Green Bin Week", nextDate: "Next Wednesday, Oct 28" },
+            "Shirley": { day: "Thursday", week: "Red + Green Bin Week", nextDate: "Next Thursday, Oct 29" },
+            "New Brighton": { day: "Friday", week: "Yellow + Green Bin Week", nextDate: "Next Friday, Oct 30" }
+        };
+
+        // --- 4. COMMUNITY EVENTS DATA ---
+        const communityEvents = [
+            { id: 1, title: "Avon River / Ōtākaro Cleanup", date: "Sat, Nov 7 • 9:00 AM", location: "Kilmarnock Reserve, Riccarton", organizer: "Avon-Heathcote Estuary Trust", icon: "fa-water" },
+            { id: 2, title: "Botanic Gardens Native Planting", date: "Sun, Nov 15 • 10:00 AM", location: "Christchurch Botanic Gardens", organizer: "CCC Parks Team", icon: "fa-tree" },
+            { id: 3, title: "Sumner Beach Litter Sweep", date: "Sat, Nov 21 • 8:30 AM", location: "Sumner Esplanade, Beachfront", organizer: "Sustainable Coastlines", icon: "fa-broom" },
+            { id: 4, title: "Linwood Community Repair Café", date: "Sat, Dec 5 • 1:00 PM", location: "Linwood Community Center", organizer: "Repair Network Ōtautahi", icon: "fa-screwdriver-wrench" }
+        ];
+
+        let registeredEvents = new Set();
+
+        // --- 5. LEAFLET MAP INITIALIZATION ---
+        let map;
+        let markersGroup;
+
+        function initMap() {
+            map = L.map('map').setView([-43.5321, 172.6362], 11);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            markersGroup = L.layerGroup().addTo(map);
+            renderLocations(ecoLocations);
+        }
+
+        function renderLocations(locations) {
+            markersGroup.clearLayers();
+            const listContainer = document.getElementById('locations-list');
+            const countDisplay = document.getElementById('results-count');
+            
+            listContainer.innerHTML = '';
+            countDisplay.textContent = `${locations.length} Location${locations.length === 1 ? '' : 's'}`;
+
+            if (locations.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-10 text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass-location text-3xl mb-2"></i>
+                        <p class="text-xs">No matching recycling locations found.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            locations.forEach(loc => {
+                const marker = L.marker([loc.lat, loc.lng]).addTo(markersGroup);
+                marker.bindPopup(`
+                    <div class="p-1">
+                        <h4 class="font-bold text-sm text-[#1b4332]">${loc.name}</h4>
+                        <p class="text-xs text-slate-600 font-medium">${loc.address}</p>
+                        <p class="text-[11px] text-[#2d6a4f] mt-1 font-bold">${loc.categoryLabel}</p>
+                    </div>
+                `);
+
+                const card = document.createElement('div');
+                card.className = "p-3.5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-emerald-50/60 hover:border-emerald-200 transition cursor-pointer";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <h4 class="font-bold text-slate-900 text-sm">${loc.name}</h4>
+                        <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-[#2d6a4f]">${loc.categoryLabel}</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-location-dot text-emerald-600 mr-1"></i> ${loc.address}</p>
+                    <p class="text-xs text-slate-500 mt-0.5"><i class="fa-regular fa-clock text-slate-400 mr-1"></i> ${loc.hours}</p>
+                    <p class="text-xs text-slate-600 mt-2 font-medium bg-white p-2 rounded-lg border border-slate-200/60"><strong class="text-[#2d6a4f]">Accepts:</strong> ${loc.accepts}</p>
+                `;
+
+                card.addEventListener('click', () => {
+                    map.setView([loc.lat, loc.lng], 14, { animate: true });
+                    marker.openPopup();
+                });
+
+                listContainer.appendChild(card);
+            });
+        }
+
+        function filterData() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const selectedCategory = document.getElementById('category-select').value;
+
+            const filtered = ecoLocations.filter(loc => {
+                const matchesSearch = loc.name.toLowerCase().includes(searchTerm) || 
+                                      loc.address.toLowerCase().includes(searchTerm) ||
+                                      loc.accepts.toLowerCase().includes(searchTerm);
+                
+                const matchesCategory = selectedCategory === 'all' || loc.category === selectedCategory;
+
+                return matchesSearch && matchesCategory;
+            });
+
+            renderLocations(filtered);
+        }
+
+        // --- 6. WASTE ITEM LOOKUP SEARCH LOGIC ---
+        function renderWasteItems(query = "", categoryFilter = "all") {
+            const resultsContainer = document.getElementById('item-lookup-results');
+            resultsContainer.innerHTML = '';
+
+            const filtered = wasteDatabase.filter(item => {
+                const matchesQuery = item.name.toLowerCase().includes(query.toLowerCase()) || 
+                                     item.category.toLowerCase().includes(query.toLowerCase()) ||
+                                     item.note.toLowerCase().includes(query.toLowerCase());
+                
+                const matchesCategory = categoryFilter === "all" || item.bin === categoryFilter;
+
+                return matchesQuery && matchesCategory;
+            });
+
+            if (filtered.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="text-center py-8 text-slate-400 bg-slate-50 rounded-2xl border border-slate-200">
+                        <i class="fa-solid fa-circle-question text-3xl mb-2 text-slate-300"></i>
+                        <p class="text-xs font-semibold">No item matched "${query}". Try searching "soft plastic", "coffee cup", "batteries" or "paper".</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "p-3.5 rounded-2xl bg-slate-50 hover:bg-white border border-slate-200/80 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs";
+                div.innerHTML = `
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-slate-900 text-sm">${item.name}</span>
+                            <span class="text-[10px] text-slate-400 font-semibold uppercase">(${item.category})</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-0.5">${item.note}</p>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-extrabold text-xs whitespace-nowrap self-start sm:self-center shadow-xs ${item.badge}">
+                        <i class="fa-solid fa-dumpster mr-1"></i> ${item.bin}
+                    </span>
+                `;
+                resultsContainer.appendChild(div);
+            });
+        }
+
+        // --- 7. BIN COLLECTION SCHEDULE DISPLAY ---
+        function updateSuburbSchedule() {
+            const suburb = document.getElementById('suburb-select').value;
+            const data = suburbSchedules[suburb];
+            const resultCard = document.getElementById('schedule-result-card');
+
+            resultCard.innerHTML = `
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                    <span class="font-extrabold text-slate-900 text-base">${suburb} Collection</span>
+                    <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-[#1b4332]">${data.day}s</span>
+                </div>
+                <div class="space-y-2 text-xs text-slate-600">
+                    <p class="flex items-center justify-between">
+                        <span class="text-slate-500">Scheduled Bins This Week:</span>
+                        <strong class="text-slate-900 text-sm font-bold">${data.week}</strong>
+                    </p>
+                    <p class="flex items-center justify-between">
+                        <span class="text-slate-500">Next Collection Date:</span>
+                        <strong class="text-[#2d6a4f] font-bold">${data.nextDate}</strong>
+                    </p>
+                    <p class="text-[11px] text-slate-400 mt-2 italic">* Put your bins out by 6:00 AM on collection morning.</p>
+                </div>
+            `;
+        }
+
+        // --- 8. CARBON CALCULATOR & SAVINGS GOAL TRACKER ---
+        function updateCalculator() {
+            const transportKm = parseFloat(document.getElementById('transport-slider').value);
+            const redBins = parseFloat(document.getElementById('bin-slider').value);
+            const meatMeals = parseFloat(document.getElementById('meat-slider').value);
+            const goalTargetPct = parseFloat(document.getElementById('goal-select').value);
+
+            document.getElementById('transport-val').textContent = `${transportKm} km`;
+            document.getElementById('bin-val').textContent = `${redBins} Bin${redBins === 1 ? '' : 's'}`;
+            document.getElementById('meat-val').textContent = `${meatMeals} meal${meatMeals === 1 ? '' : 's'}`;
+
+            const transportCO2 = transportKm * 0.18;
+            const binCO2 = redBins * 12;
+            const meatCO2 = meatMeals * 1.8;
+
+            const totalWeeklyCO2 = transportCO2 + binCO2 + meatCO2;
+            const totalAnnualCO2 = totalWeeklyCO2 * 52;
+            const displayWeekly = totalWeeklyCO2.toFixed(1);
+
+            document.getElementById('co2-total').textContent = displayWeekly;
+
+            // Badge Update
+            const badge = document.getElementById('impact-badge');
+            let badgeText = "";
+            let badgeClass = "";
+
+            if (totalWeeklyCO2 < 20) {
+                badgeText = "Low Impact (Great job!)";
+                badgeClass = "bg-emerald-100 text-emerald-800";
+            } else if (totalWeeklyCO2 < 45) {
+                badgeText = "Moderate Impact";
+                badgeClass = "bg-yellow-100 text-yellow-800";
+            } else {
+                badgeText = "High Impact";
+                badgeClass = "bg-red-100 text-red-800";
+            }
+
+            badge.textContent = badgeText;
+            badge.className = `inline-block px-3 py-1 rounded-full text-xs font-extrabold mb-4 ${badgeClass}`;
+
+            // Savings Goal Target Box Calculation
+            const savedAnnualCO2 = totalAnnualCO2 * goalTargetPct;
+            const equivalentTrees = Math.round(savedAnnualCO2 / 21); // ~21kg CO2 per native tree/year
+            const goalBox = document.getElementById('goal-summary-box');
+
+            goalBox.innerHTML = `
+                <div class="flex items-center gap-2 text-emerald-800 font-bold border-b border-emerald-200 pb-1.5 mb-1.5">
+                    <i class="fa-solid fa-bullseye text-sm"></i>
+                    <span>Goal: ${goalTargetPct * 100}% Carbon Savings</span>
+                </div>
+                <p>• Save <strong>${savedAnnualCO2.toFixed(0)} kg CO₂e</strong> every year.</p>
+                <p>• Equivalent to planting <strong>${equivalentTrees} native trees</strong> in Canterbury.</p>
+            `;
+
+            // Actionable Tips
+            const tipsContainer = document.getElementById('calc-tips');
+            tipsContainer.innerHTML = `
+                <p class="font-bold text-slate-800 mb-1"><i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i> Personalized Action Tips:</p>
+                ${transportKm > 80 ? '<p>• Try walking, cycling, or using Metro bus for trips under 3km.</p>' : ''}
+                ${redBins >= 1 ? '<p>• Divert soft plastics to store drop-offs and food scraps to the green bin.</p>' : ''}
+                ${meatMeals > 7 ? '<p>• Introducing 2-3 plant-based meals per week can save over 5kg CO₂e.</p>' : ''}
+                ${transportKm <= 80 && redBins < 1 && meatMeals <= 7 ? '<p>• Fantastic effort! Maintain your sustainable habits across Canterbury.</p>' : ''}
+            `;
+        }
+
+        // --- 9. COMMUNITY EVENTS FEED LOGIC ---
+        function renderEvents() {
+            const container = document.getElementById('events-feed-grid');
+            container.innerHTML = '';
+
+            communityEvents.forEach(evt => {
+                const isRegistered = registeredEvents.has(evt.id);
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition";
+                card.innerHTML = `
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-[#2d6a4f] flex items-center justify-center font-extrabold text-xl mb-4">
+                            <i class="fa-solid ${evt.icon}"></i>
+                        </div>
+                        <h3 class="font-bold text-base text-slate-900 mb-1">${evt.title}</h3>
+                        <p class="text-xs text-emerald-700 font-bold mb-2"><i class="fa-regular fa-calendar mr-1"></i> ${evt.date}</p>
+                        <p class="text-xs text-slate-500 mb-1"><i class="fa-solid fa-location-dot mr-1"></i> ${evt.location}</p>
+                        <p class="text-xs text-slate-400 mb-6 font-medium">Host: ${evt.organizer}</p>
+                    </div>
+                    <button class="rsvp-btn w-full py-2.5 px-4 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 ${isRegistered ? 'bg-emerald-100 text-[#1b4332] border border-emerald-300' : 'bg-[#2d6a4f] text-white hover:bg-[#1b4332]'}" data-id="${evt.id}">
+                        ${isRegistered ? '<i class="fa-solid fa-circle-check text-emerald-600"></i> Registered!' : '<i class="fa-solid fa-user-plus"></i> RSVP to Join'}
+                    </button>
+                `;
+
+                card.querySelector('.rsvp-btn').addEventListener('click', (e) => {
+                    const evtId = parseInt(e.currentTarget.getAttribute('data-id'));
+                    if (registeredEvents.has(evtId)) {
+                        registeredEvents.delete(evtId);
+                    } else {
+                        registeredEvents.add(evtId);
+                    }
+                    renderEvents();
+                });
+
+                container.appendChild(card);
+            });
+        }
+
+        // --- 10. DOM READY INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap();
+
+            // Directory search and filters
+            document.getElementById('search-input').addEventListener('input', filterData);
+            document.getElementById('category-select').addEventListener('change', filterData);
+
+            // Expanded waste item lookup
+            renderWasteItems();
+            document.getElementById('item-lookup-input').addEventListener('input', (e) => {
+                renderWasteItems(e.target.value);
+            });
+            document.getElementById('clear-lookup-btn').addEventListener('click', () => {
+                document.getElementById('item-lookup-input').value = '';
+                renderWasteItems();
+            });
+
+            const lookupChips = document.querySelectorAll('.lookup-chip');
+            lookupChips.forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const filter = chip.getAttribute('data-filter');
+                    const currentQuery = document.getElementById('item-lookup-input').value;
+                    renderWasteItems(currentQuery, filter);
+                });
+            });
+
+            // Bin Day Suburb Lookup
+            updateSuburbSchedule();
+            document.getElementById('suburb-select').addEventListener('change', updateSuburbSchedule);
+
+            // Carbon Calculator listeners
+            document.getElementById('transport-slider').addEventListener('input', updateCalculator);
+            document.getElementById('bin-slider').addEventListener('input', updateCalculator);
+            document.getElementById('meat-slider').addEventListener('input', updateCalculator);
+            document.getElementById('goal-select').addEventListener('change', updateCalculator);
+            updateCalculator();
+
+            // Community events feed
+            renderEvents();
+
+            // Mobile nav menu toggle
+            const mobileBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileLinks = document.querySelectorAll('.mobile-nav-link');
+
+            mobileBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
